@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}
+ВХОД
+{% endblock %}
+
+
+{% block main %} 
+
+      <div class="container text-center my-5">
+  
+        <form class="form-signin w-25 m-auto" method="post" >
+            <h1 class="h3 mb-3 font-weight-normal">Вход</h1>
+            <input type="email" id="inputEmail" class="form-control my-3" placeholder="Почта" name="email" required="" autofocus="">
+            <input type="password" id="inputPassword" class="form-control my-3" placeholder="Пароль" name="password" required="">
+
+            <button class="btn btn-lg btn-primary btn-block w-100" type="submit">Войти</button>
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+               {% for message in messages %}
+                 <p class="bad my-5"> {{ message }}</p>
+               {% endfor %}
+            {% endif %}
+         {% endwith %}
+          </form>
+      </div>
+
+      {% endblock %}

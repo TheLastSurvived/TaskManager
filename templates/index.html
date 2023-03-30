@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}
+Task manager
+{% endblock %}
+
+
+{% block main %} 
+{{ ckeditor.load() }}
+    <div class="container">
+        <h2 class="text-center">Работники и Задачи</h2>
+
+<!-- Кнопка-триггер модального окна -->
+{% if active_user.root == 1 %}
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+    Добавить сотрудника
+  </button>
+{%endif%}
+{% with messages = get_flashed_messages() %}
+   {% if messages %}
+      {% for message in messages %}
+        <p class="bad my-3"> {{ message }}</p>
+      {% endfor %}
+   {% endif %}
+{% endwith %}
+  
+  <!-- Модальное окно -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Добавить сотрудника</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+            <form method="post" enctype="multipart/form-data">
+                <div class="form-group mb-3">
+                    <label for="exampleInputEmail1">Имя</label>
+                    <input type="text" class="form-control" id="exampleInputEmail1" name="name" aria-describedby="emailHelp" required>
+                  </div>
+                  <div class="form-group mb-3">
+                    <label for="exampleInputEmail1">Фамилия</label>
+                    <input type="text" class="form-control" id="exampleInputEmail1" name="surname" aria-describedby="emailHelp" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="exampleFormControlTextarea1">Характеристика</label>
+                    {{ ckeditor.create() }}
+                  </div>
+
+                  <div class="form-group mb-3">
+                    <label for="exampleInputEmail1">Отдел</label>
+                    <input type="text" class="form-control" id="exampleInputEmail1" name="departament" aria-describedby="emailHelp" required>
+
+                  </div>
+                  <div class="form-group mb-3">
+                    <label for="exampleInputEmail1">Должность</label>
+                    <input type="text" class="form-control" id="exampleInputEmail1" name="job" aria-describedby="emailHelp" required>
+                    </div>
+                <div class="form-group mb-3">
+                  <label for="exampleInputEmail1">Почта</label>
+                  <input type="email" class="form-control" id="exampleInputEmail1" name="email" aria-describedby="emailHelp" required>
+                </div>
+                <div class="form-group mb-3">
+                  <label for="exampleInputEmail1">Номер телефона</label>
+                  <input type="Number" class="form-control" id="exampleInputEmail1" name="phone" aria-describedby="emailHelp" required>
+                </div>
+                <div class="form-group mb-3">
+                  <label for="exampleInputPassword1">Пароль</label>
+                  <input type="password" class="form-control" id="exampleInputPassword1" name="password" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="exampleFormControlFile1">Фото</label>
+                    <input type="file" class="form-control-file" id="exampleFormControlFile1" accept="image/*" name="photo">
+                  </div>
+                  <div class="form-group mb-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+
+                    <input type="submit" class="btn btn-primary" value="Добавить" id="exampleFormControlFile1" >
+                  </div>
+                </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+   
+
+        <div class="workers my-5">
+
+          {% if not users%}
+            <h4 class="text-center">Список сотрудников пуст!</h4>
+         
+          {%else%}
+              {%for worker in users%}
+              <div class="worker">
+                <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                  <div class="col p-4 d-flex flex-column position-static">
+                    <h3 class="mb-0">{{worker.name}} {{worker.surname}}</h3>
+                    <div class="mb-1 text-muted">{{worker.department}}</div>
+                    <p class="card-text mb-auto">{{worker.position}}</p>
+                    <a class="btn btn-primary w-25 mb-3" href="/worker/{{worker.id}}">Просмотреть</a>
+
+                    {%if active_user.root == 1%}
+                    <a href="/delete-worker/{{worker.id}}" class="btn btn-danger w-25 mb-3">Удалить</a>
+                    {%endif%}
+                    
+                  </div>
+                  <div class="col-auto d-none d-lg-block p-4">
+                    {% if not worker.photo%}
+                    <img src="../static/img/empty-photo.jpg"  width="450"  height="300" alt="">
+                    {%else%}
+                    <img src="../static/img/{{worker.photo}}" width="450"   height="300" alt="">
+
+                    {%endif%}
+                  </div>
+                </div>
+              </div>
+              {%endfor%}
+              {%endif%}
+          </div>
+
+    </div>
+    {% endblock %}

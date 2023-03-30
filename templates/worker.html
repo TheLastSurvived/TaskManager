@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% block title %}
+Сотрудник
+{% endblock %}
+
+
+{% block main %} 
+{{ ckeditor.load() }}
+
+<div class="container">
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+     {% for message in messages %}
+       <p class="bad my-3"> {{ message }}</p>
+     {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="worker">
+    <div class="row g-0  rounded overflow-hidden flex-md-row mb-4 h-md-250 position-relative">
+      <div class="col d-flex flex-column position-static">
+        <h3 class="mb-0">{{user.name}} {{user.surname}}</h3>
+        <div class="mb-1 text-muted">Отдел: {{user.department}}</div>
+        <p class="card-text mb-auto">Должность: {{user.position}}</p>
+        <p>Принят на работу: {{user.date.strftime('%d.%m.%Y')}}</p>
+        <p>Почта: {{user.email}}</p>
+        <p>Номер телефона: +{{user.phone_number}}</p>
+        <h5>Процент выполненных задач: {{task_success_procent}}% ({{count_task_success}} из {{count_task}})</h5>
+
+      </div>
+      <div class="col-auto d-none d-lg-block">
+        {% if user.photo%}
+          <img src="../static/img/{{user.photo}}" width="100%" height="250" alt="">
+        {%else%}
+        <img src="../static/img/empty-photo.jpg" width="400"  height="250" alt="">
+
+        {%endif%}
+      </div>
+      <h4 class="text-center">Характеристика</h4>
+      {% autoescape false %}
+      {{user.characteristic}}
+      {% endautoescape %}
+      <h4 class="text-center">Список задач</h4>
+      <div class="">
+        
+        <p class="text-center"> <span class="text-danger">Красный</span> - Первоочередная | <span class="text-warning">Желтый</span> - Важная | <span class="text-info">Голубой</span> - Обычная | <span class="text-success">Зеленый</span> - Выполнена</p>
+
+        <ul class="list-group">
+          
+          {% for task in user.task_id %}
+
+          <li  class="list-group-item d-flex justify-content-between align-items-center">
+            {% if task.type_task=='Первоочередная' %}
+            <p class="text-danger">{{task.title}}   
+              <br>
+              <small class="text-muted">{{task.description}}</small>
+              <br>         
+              <small>{{task.date.strftime('%Y.%m.%d %H:%M') }}</small>
+            </p>
+            {%elif task.type_task=='Важная'%}
+            <p class="text-warning">{{task.title}}
+              <br>
+              <small class="text-muted">{{task.description}}</small>
+
+              <br>         
+              <small>{{task.date.strftime('%Y.%m.%d %H:%M') }}</small>
+            </p>
+
+            {%elif task.type_task=='Выполнена'%}
+            <p class="text-success">{{task.title}}
+              <br>
+              <small class="text-muted">{{task.description}}</small>
+
+              <br>         
+              <small>{{task.date.strftime('%Y.%m.%d %H:%M') }}</small>
+            </p>
+
+            {%else%}
+            <p class="text-info">{{task.title}}
+              <br>
+              <small class="text-muted">{{task.description}}</small>
+
+              <br>         
+              <small>{{task.date.strftime('%Y.%m.%d %H:%M') }}</small>
+            </p>
+            {%endif%}
+            <div class="d-flex justify-content-end align-items-center w-50">
+
+              {%if task.type_task=='Выполнена'%}
+              <p class="text-success p-3">Выполнено</p>
+              {%else%}
+              <a href="/success-task/{{task.id}}/{{user.id}}" class="btn btn-success mx-2">Выполнить</a> 
+              {%endif%}
+
+              {%if active_user.root == 1 %}
+              <a href="/delete-task/{{task.id}}/{{user.id}}" class="btn btn-danger m-3">Удалить задачу</a> 
+              {%endif %}
+
+            </div>
+          </li>
+          {%endfor%}
+        </ul>
+    </div>
+
+    <div class="d-flex justify-content-between">
+    <button type="button" class="btn btn-primary w-25 m-3" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+      Добавить задачу
+    </button>
+    {%if active_user.root == 1%}
+    <button type="button" class="btn btn-warning w-25 m-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+      Редактировать сотрудника
+    </button>
+    {%endif %}
+    {%if  active_user.root == 1%}
+    <a href="/delete-worker/{{user.id}}" class="btn btn-danger w-25 m-3">Удалить сотрудника</a>
+    {%endif %}
+  </div>
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">   Редактировать сотрудника</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+              <form method="post" enctype="multipart/form-data">
+                  <div class="form-group mb-3">
+                      <label for="exampleInputEmail1">Имя</label>
+                      <input type="text" class="form-control" id="exampleInputEmail1" name="name" aria-describedby="emailHelp" value="{{user.name}} " required>
+                    </div>
+                    <div class="form-group mb-3">
+                      <label for="exampleInputEmail1">Фамилия</label>
+                      <input type="text" class="form-control" id="exampleInputEmail1" name="surname" value="{{user.surname}}"   aria-describedby="emailHelp" required>
+                    </div>
+  
+                    <div class="form-group">
+                      <label for="exampleFormControlTextarea1">Характеристика</label>
+                      {{ ckeditor.create(value=user.characteristic) }}
+                      
+                    </div>
+  
+                    <div class="form-group mb-3">
+                      <label for="exampleInputEmail1">Отдел</label>
+                      <input type="text" class="form-control" id="exampleInputEmail1" value="{{user.department}}" name="departament" aria-describedby="emailHelp" required>
+  
+                    </div>
+                    <div class="form-group mb-3">
+                      <label for="exampleInputEmail1">Должность</label>
+                      <input type="text" class="form-control" id="exampleInputEmail1" value="{{user.position}}" name="job" aria-describedby="emailHelp" required>
+                      </div>
+                  <div class="form-group mb-3">
+                    <label for="exampleInputEmail1">Почта</label>
+                    <input type="email" class="form-control" id="exampleInputEmail1" value="{{user.email}}" name="email" aria-describedby="emailHelp" required>
+                  </div>
+                  <div class="form-group mb-3">
+                    <label for="exampleInputEmail1">Номер телефона</label>
+                    <input type="Number" class="form-control" id="exampleInputEmail1" value="{{user.phone_number}}" name="phone" aria-describedby="emailHelp" required>
+                  </div>
+                  <div class="form-group mb-3">
+                    <label for="exampleInputPassword1">Пароль</label>
+                    <input type="password" class="form-control" id="exampleInputPassword1" value="{{user.password}}" name="password" required>
+                  </div>
+                  <div class="form-group mb-3">
+                      <label for="exampleFormControlFile1">Фото</label>
+                      <input type="file" class="form-control-file" id="exampleFormControlFile1" accept="image/*" name="photo">
+                    </div>
+                    <div class="form-group mb-3">
+                      <input type="submit" class="btn btn-primary" value="Изменить" id="exampleFormControlFile1" >
+
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+  
+                    </div>
+                  </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+<!-- Модальное окно -->
+<div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Добавить задачу</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+          <form method="post" action="{{url_for('add_task', id_worker=user.id)}}">
+            <div class="form-group mb-3">
+              <label for="exampleInputEmail1">Задача</label>
+              <input type="text" class="form-control" id="exampleInputEmail1" name="title" aria-describedby="emailHelp"  required>
+            </div>
+              <div class="form-group mb-3">
+                  <label for="exampleFormControlTextarea1">Описание</label>
+                  <textarea class="form-control" id="exampleFormControlTextarea1" name="description" rows="3" required></textarea>
+                </div>
+                <div class="form-group mb-3">
+                  <label for="exampleFormControlSelect1">Тип задачи</label>
+                  <select name="type_task" class="form-control"  id="exampleFormControlSelect1">
+                    <option selected value="Первоочередная">Первоочередная</option>
+                    <option value="Важная">Важная</option>
+                    <option value="Обычная">Обычная</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <input type="submit" class="btn btn-primary" value="Добавить" name="" id="">
+
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+
+
+
+            </form>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
